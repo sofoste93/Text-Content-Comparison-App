@@ -1,2 +1,8 @@
 # Text-Content-Comparison-App
- This Python App take two text files and compare their content
+ 
+>This python based App take two text files and compare their content
+
+>
+
+# Contributions
+> 

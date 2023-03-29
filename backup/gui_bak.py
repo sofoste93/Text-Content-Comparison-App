@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import messagebox
 from utils import browse_file, save_report
@@ -22,14 +23,14 @@ class FileComparisonGUI(tk.Tk):
         file_frame = tk.Frame(self)
         file_frame.pack(padx=10, pady=10)
 
-        file1_label = tk.Label(file_frame, text="Select file 1:")
+        file1_label = tk.Label(file_frame, text="File 1:")
         file1_label.grid(row=0, column=0, padx=5, pady=5)
         self.file1_entry = tk.Entry(file_frame, width=60)
         self.file1_entry.grid(row=0, column=1, padx=5, pady=5)
         file1_button = tk.Button(file_frame, text="Browse", command=lambda: browse_file(self.file1_entry))
         file1_button.grid(row=0, column=2, padx=5, pady=5)
 
-        file2_label = tk.Label(file_frame, text="Select file 2:")
+        file2_label = tk.Label(file_frame, text="File 2:")
         file2_label.grid(row=1, column=0, padx=5, pady=5)
         self.file2_entry = tk.Entry(file_frame, width=60)
         self.file2_entry.grid(row=1, column=1, padx=5, pady=5)
@@ -115,3 +116,4 @@ class FileComparisonGUI(tk.Tk):
     def _save_report(self):
         report_content = self.result_text.get(1.0, tk.END)
         save_report(report_content)
+
