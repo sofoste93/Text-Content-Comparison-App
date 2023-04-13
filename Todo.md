@@ -10,7 +10,7 @@
 
 >Side-by-side comparison: Modify the gui.py file to display two Text widgets side-by-side for the original files, and a third Text widget for the comparison results. Implement synchronized scrolling for the side-by-side Text widgets.
 
-
+> ### add new function: select source method(paste text or type in)
 # Project Structure:
 >
 >file_comparison_tool/<br>

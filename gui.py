@@ -7,7 +7,7 @@ from Comparison import compare_files
 class FileComparisonGUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("File Comparison Tool")
+        self.title("Sofostech File Comparison Tool")
         self.geometry("800x600")
 
         self._build_gui()
