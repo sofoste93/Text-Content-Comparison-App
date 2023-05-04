@@ -122,11 +122,16 @@ class FileComparisonGUI(tk.Tk):
         else:
             new_mode = light_mode
 
-        widgets = [self, self.file1_entry, self.file2_entry, self.file1_text, self.file2_text, self.result_text]
+        widgets_without_fg = [self, self.file1_entry, self.file2_entry, self.file1_text, self.file2_text,
+                              self.result_text]
 
-        for widget in widgets:
-            widget.config(bg=new_mode["bg"], fg=new_mode["fg"], insertbackground=new_mode["insertbackground"],
-                          selectbackground=new_mode["selectbackground"], selectforeground=new_mode["selectforeground"])
+        for widget in widgets_without_fg:
+            if widget != self:
+                widget.config(bg=new_mode["bg"], fg=new_mode["fg"], insertbackground=new_mode["insertbackground"],
+                              selectbackground=new_mode["selectbackground"],
+                              selectforeground=new_mode["selectforeground"])
+            else:
+                widget.config(bg=new_mode["bg"])
 
     def _compare_files(self):
         file1_path = self.file1_entry.get()
