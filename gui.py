@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from utils import browse_file, save_report
+from utils import browse_file, save_report, _show_help
 from Comparison import compare_files
 
 
@@ -13,10 +13,20 @@ class FileComparisonGUI(tk.Tk):
         self._build_gui()
 
     def _build_gui(self):
+        self._create_menu_bar()
         self._create_file_frame()
         self._create_comparison_options_frame()
         self._create_comparison_text_widgets()
         self._create_button_frame()
+
+    def _create_menu_bar(self):
+        menu_bar = tk.Menu(self)
+
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        help_menu.add_command(label="How to use", command=_show_help)
+        menu_bar.add_cascade(label="Help", menu=help_menu)
+
+        self.config(menu=menu_bar)
 
     def _create_file_frame(self):
         file_frame = tk.Frame(self)
@@ -84,6 +94,39 @@ class FileComparisonGUI(tk.Tk):
 
         cancel_button = tk.Button(button_frame, text="Cancel", command=self.destroy)
         cancel_button.pack(side="left", padx=5)
+
+        toggle_dark_mode_button = tk.Button(button_frame, text="Toggle Dark Mode", command=self._toggle_dark_mode)
+        toggle_dark_mode_button.pack(side="left", padx=5)
+
+    def _toggle_dark_mode(self):
+        dark_mode = {
+            "bg": "#2b2b2b",
+            "fg": "#ffffff",
+            "insertbackground": "#ffffff",
+            "selectbackground": "#4a4a4a",
+            "selectforeground": "#ffffff",
+        }
+
+        light_mode = {
+            "bg": "#ffffff",
+            "fg": "#000000",
+            "insertbackground": "#000000",
+            "selectbackground": "#c0c0c0",
+            "selectforeground": "#000000",
+        }
+
+        current_bg = self["bg"]
+
+        if current_bg == light_mode["bg"]:
+            new_mode = dark_mode
+        else:
+            new_mode = light_mode
+
+        widgets = [self, self.file1_entry, self.file2_entry, self.file1_text, self.file2_text, self.result_text]
+
+        for widget in widgets:
+            widget.config(bg=new_mode["bg"], fg=new_mode["fg"], insertbackground=new_mode["insertbackground"],
+                          selectbackground=new_mode["selectbackground"], selectforeground=new_mode["selectforeground"])
 
     def _compare_files(self):
         file1_path = self.file1_entry.get()
