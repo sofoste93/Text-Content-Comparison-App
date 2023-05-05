@@ -168,8 +168,21 @@ class FileComparisonGUI(tk.Tk):
             comparison = compare_files_from_text(file1_content, file2_content, ignore_whitespace, ignore_case)
 
             self.result_text.delete(1.0, tk.END)
+            self.result_text.tag_configure("added", foreground="green")
+            self.result_text.tag_configure("removed", foreground="red")
+            self.result_text.tag_configure("context", foreground="gray")
+            self.result_text.tag_configure("lineno", foreground="blue")
+
             for line in comparison:
-                self.result_text.insert(tk.END, line)
+                if line.startswith('+'):
+                    tag = "added"
+                elif line.startswith('-'):
+                    tag = "removed"
+                elif line.startswith('@'):
+                    tag = "context"
+                else:
+                    tag = "lineno"
+                self.result_text.insert(tk.END, line + '\n', tag)
 
         except Exception as e:
             messagebox.showerror("Error", str(e))

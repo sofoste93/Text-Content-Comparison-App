@@ -1,5 +1,5 @@
+# utils.py
 from tkinter import filedialog, messagebox
-
 
 def browse_file(entry):
     file_path = filedialog.askopenfilename()
