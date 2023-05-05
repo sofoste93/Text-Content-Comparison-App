@@ -140,6 +140,12 @@ class FileComparisonGUI(tk.Tk):
             else:
                 widget.config(bg=new_mode["bg"])
 
+    def _insert_text_with_line_numbers(self, text_widget, text):
+        lines = text.split("\n")
+        for i, line in enumerate(lines, start=1):
+            text_widget.insert(tk.END, f"{i}- ")
+            text_widget.insert(tk.END, f"{line}\n")
+
     def _compare_files(self):
         file1_path = self.file1_entry.get()
         file2_path = self.file2_entry.get()
@@ -156,16 +162,19 @@ class FileComparisonGUI(tk.Tk):
             if not file1_content:
                 with open(file1_path, 'r', encoding='utf-8') as file1:
                     file1_content = file1.read()
-                    self.file1_text.delete(1.0, tk.END)
-                    self.file1_text.insert(tk.END, file1_content)
 
             if not file2_content:
                 with open(file2_path, 'r', encoding='utf-8') as file2:
                     file2_content = file2.read()
-                    self.file2_text.delete(1.0, tk.END)
-                    self.file2_text.insert(tk.END, file2_content)
 
             comparison = compare_files_from_text(file1_content, file2_content, ignore_whitespace, ignore_case)
+
+            # Display texts with line numbers
+            self.file1_text.delete(1.0, tk.END)
+            self._insert_text_with_line_numbers(self.file1_text, file1_content)
+
+            self.file2_text.delete(1.0, tk.END)
+            self._insert_text_with_line_numbers(self.file2_text, file2_content)
 
             self.result_text.delete(1.0, tk.END)
             self.result_text.tag_configure("added", foreground="green")
@@ -173,7 +182,11 @@ class FileComparisonGUI(tk.Tk):
             self.result_text.tag_configure("context", foreground="gray")
             self.result_text.tag_configure("lineno", foreground="blue")
 
+            no_difference = True
             for line in comparison:
+                if line.startswith('+') or line.startswith('-'):
+                    no_difference = False
+
                 if line.startswith('+'):
                     tag = "added"
                 elif line.startswith('-'):
@@ -183,6 +196,10 @@ class FileComparisonGUI(tk.Tk):
                 else:
                     tag = "lineno"
                 self.result_text.insert(tk.END, line + '\n', tag)
+
+            if no_difference:
+                self.result_text.tag_configure("no_difference", foreground="green", font=("Arial", 16, "bold"))
+                self.result_text.insert(tk.END, "No differences found!", "no_difference")
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
