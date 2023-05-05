@@ -11,7 +11,7 @@ class FileComparisonGUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Sofostech File Comparison Tool")
-        self.geometry("800x600")
+        self.geometry("1280x800")
 
         self._build_gui()
 
@@ -170,12 +170,20 @@ class FileComparisonGUI(tk.Tk):
 
             # If the Text widgets are empty, read the contents from the files
             if not file1_content:
-                with open(file1_path, 'r', encoding='utf-8') as file1:
-                    file1_content = file1.read()
+                if file1_path:
+                    with open(file1_path, 'r', encoding='utf-8') as file1:
+                        file1_content = file1.read()
+                else:
+                    messagebox.showerror("Error", "No input provided for text 1. Please enter text or select a file to compare.")
+                    return
 
             if not file2_content:
-                with open(file2_path, 'r', encoding='utf-8') as file2:
-                    file2_content = file2.read()
+                if file2_path:
+                    with open(file2_path, 'r', encoding='utf-8') as file2:
+                        file2_content = file2.read()
+                else:
+                    messagebox.showerror("Error", "No input provided for text 2. Please enter text or select a file to compare.")
+                    return
 
             comparison = compare_files_from_text(file1_content, file2_content, ignore_whitespace, ignore_case)
 
@@ -211,6 +219,8 @@ class FileComparisonGUI(tk.Tk):
                 self.result_text.tag_configure("no_difference", foreground="green", font=("Arial", 16, "bold"))
                 self.result_text.insert(tk.END, "No differences found!", "no_difference")
 
+        except FileNotFoundError:
+            messagebox.showerror("Error", "File not found. Please make sure you've entered the correct file path.")
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
