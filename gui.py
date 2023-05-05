@@ -1,7 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
+
+import pyperclip
+
 from utils import browse_file, save_report, _show_help
-from Comparison import compare_files
+from Comparison import compare_files, compare_files_from_text
 
 
 class FileComparisonGUI(tk.Tk):
@@ -32,19 +35,23 @@ class FileComparisonGUI(tk.Tk):
         file_frame = tk.Frame(self)
         file_frame.pack(padx=10, pady=10)
 
-        file1_label = tk.Label(file_frame, text="Select file 1:")
+        file1_label = tk.Label(file_frame, text="Select file 1 or paste text:")
         file1_label.grid(row=0, column=0, padx=5, pady=5)
         self.file1_entry = tk.Entry(file_frame, width=60)
         self.file1_entry.grid(row=0, column=1, padx=5, pady=5)
         file1_button = tk.Button(file_frame, text="Browse", command=lambda: browse_file(self.file1_entry))
         file1_button.grid(row=0, column=2, padx=5, pady=5)
+        paste1_button = tk.Button(file_frame, text="Paste", command=lambda: self._paste_text(self.file1_text))
+        paste1_button.grid(row=0, column=3, padx=5, pady=5)
 
-        file2_label = tk.Label(file_frame, text="Select file 2:")
+        file2_label = tk.Label(file_frame, text="Select file 2 or paste text:")
         file2_label.grid(row=1, column=0, padx=5, pady=5)
         self.file2_entry = tk.Entry(file_frame, width=60)
         self.file2_entry.grid(row=1, column=1, padx=5, pady=5)
         file2_button = tk.Button(file_frame, text="Browse", command=lambda: browse_file(self.file2_entry))
         file2_button.grid(row=1, column=2, padx=5, pady=5)
+        paste2_button = tk.Button(file_frame, text="Paste", command=lambda: self._paste_text(self.file2_text))
+        paste2_button.grid(row=1, column=3, padx=5, pady=5)
 
     def _create_comparison_options_frame(self):
         options_frame = tk.Frame(self)
@@ -141,19 +148,26 @@ class FileComparisonGUI(tk.Tk):
         ignore_case = self.ignore_case_var.get()
 
         try:
-            comparison = compare_files(file1_path, file2_path, ignore_whitespace, ignore_case)
+            # Check if there is text in the Text widgets
+            file1_content = self.file1_text.get(1.0, tk.END).strip()
+            file2_content = self.file2_text.get(1.0, tk.END).strip()
 
-            self.file1_text.delete(1.0, tk.END)
-            self.file2_text.delete(1.0, tk.END)
+            # If the Text widgets are empty, read the contents from the files
+            if not file1_content:
+                with open(file1_path, 'r', encoding='utf-8') as file1:
+                    file1_content = file1.read()
+                    self.file1_text.delete(1.0, tk.END)
+                    self.file1_text.insert(tk.END, file1_content)
+
+            if not file2_content:
+                with open(file2_path, 'r', encoding='utf-8') as file2:
+                    file2_content = file2.read()
+                    self.file2_text.delete(1.0, tk.END)
+                    self.file2_text.insert(tk.END, file2_content)
+
+            comparison = compare_files_from_text(file1_content, file2_content, ignore_whitespace, ignore_case)
+
             self.result_text.delete(1.0, tk.END)
-
-            with open(file1_path, 'r', encoding='utf-8') as file1, open(file2_path, 'r', encoding='utf-8') as file2:
-                file1_content = file1.read()
-                file2_content = file2.read()
-
-            self.file1_text.insert(tk.END, file1_content)
-            self.file2_text.insert(tk.END, file2_content)
-
             for line in comparison:
                 self.result_text.insert(tk.END, line)
 
@@ -163,3 +177,8 @@ class FileComparisonGUI(tk.Tk):
     def _save_report(self):
         report_content = self.result_text.get(1.0, tk.END)
         save_report(report_content)
+
+    def _paste_text(self, text_widget):
+        clipboard_text = pyperclip.paste()
+        text_widget.delete(1.0, tk.END)
+        text_widget.insert(tk.END, clipboard_text)
