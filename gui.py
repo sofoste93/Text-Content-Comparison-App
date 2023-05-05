@@ -99,11 +99,21 @@ class FileComparisonGUI(tk.Tk):
         save_button = tk.Button(button_frame, text="Save Report", command=self._save_report)
         save_button.pack(side="left", padx=5)
 
+        clear_button = tk.Button(button_frame, text="Clear", command=self._clear_all)
+        clear_button.pack(side="left", padx=5)
+
         cancel_button = tk.Button(button_frame, text="Cancel", command=self.destroy)
         cancel_button.pack(side="left", padx=5)
 
         toggle_dark_mode_button = tk.Button(button_frame, text="Toggle Dark Mode", command=self._toggle_dark_mode)
         toggle_dark_mode_button.pack(side="left", padx=5)
+
+    def _clear_all(self):
+        self.file1_entry.delete(0, tk.END)
+        self.file2_entry.delete(0, tk.END)
+        self.file1_text.delete(1.0, tk.END)
+        self.file2_text.delete(1.0, tk.END)
+        self.result_text.delete(1.0, tk.END)
 
     def _toggle_dark_mode(self):
         dark_mode = {
