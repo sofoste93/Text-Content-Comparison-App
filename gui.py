@@ -174,7 +174,8 @@ class FileComparisonGUI(tk.Tk):
                     with open(file1_path, 'r', encoding='utf-8') as file1:
                         file1_content = file1.read()
                 else:
-                    messagebox.showerror("Error", "No input provided for text 1. Please enter text or select a file to compare.")
+                    messagebox.showerror("Error", "No input provided for text 1. Please enter text or select a file "
+                                                  "to compare.")
                     return
 
             if not file2_content:
@@ -182,7 +183,8 @@ class FileComparisonGUI(tk.Tk):
                     with open(file2_path, 'r', encoding='utf-8') as file2:
                         file2_content = file2.read()
                 else:
-                    messagebox.showerror("Error", "No input provided for text 2. Please enter text or select a file to compare.")
+                    messagebox.showerror("Error", "No input provided for text 2. Please enter text or select a file "
+                                                  "to compare.")
                     return
 
             comparison = compare_files_from_text(file1_content, file2_content, ignore_whitespace, ignore_case)
