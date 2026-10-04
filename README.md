@@ -1,65 +1,99 @@
-# Text-Content-Comparison-App
->
-> ## About Sofostech File Comparison Tool
+# Text Orbit Compare
 
-This is a simple and powerful text and file comparison tool developed with Python and the Tkinter GUI library. It allows you to compare the contents of two files or manually entered text, highlighting the differences line by line, and provides the capability to ignore differences in case or whitespace. It has an easy-to-use graphical interface and supports both file selection and direct text input methods for comparison.
+[![CI](https://github.com/sofoste93/Text-Content-Comparison-App/actions/workflows/ci.yml/badge.svg)](https://github.com/sofoste93/Text-Content-Comparison-App/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/sofoste93/Text-Content-Comparison-App?display_name=tag)](https://github.com/sofoste93/Text-Content-Comparison-App/releases/latest)
+[![Language: C11](https://img.shields.io/badge/language-C11-2ac9d0.svg)](https://en.cppreference.com/w/c/11)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2667ff.svg)](LICENSE)
 
-## Features
+Text Orbit Compare is a native C desktop application for inspecting two text documents side by side. Version 2 restores the original Python/Tkinter project as a fast, portable and learner-friendly GUI.
 
-- Compare two text files or manually entered text.
-- Option to ignore case differences or whitespace.
-- Visual representation of differences with line numbers.
-- ![img.png](checking...png)
-- Differences are highlighted in green (additions) and red (deletions).
-- Display a clear message when no differences are found.
-- ![img.png](no-difference-found.png)
-- Save the comparison result as a report.
-- Light and dark mode support for the interface.
-- Clear functionality to reset all fields for a new comparison.
-- Error handling for missing file or text inputs.
+![Text Orbit Compare dark interface](docs/screenshots/text-orbit-v2.png)
 
-## How to Use
+## Mission controls
 
-1. Open the application.
-2. In the fields labeled 'Select file 1 or paste text' and 'Select file 2 or paste text', either browse to select a file or paste/enter the text you want to compare.
-3. Choose your comparison options: 'Ignore Whitespace' and 'Ignore Case'.
-4. Click 'Compare Files' to see the differences between the two texts. Differences will be highlighted in the 'Results' section.
-5. If desired, click 'Save Report' to save the comparison result as a text file.
-6. 'Clear' button can be used to reset all fields for a new comparison.
+- Open, paste, edit or drag-and-drop two documents
+- Line-aligned comparison with changed, added, removed and matching statistics
+- Ignore case or normalize whitespace before comparison
+- Show only changes and search across the result stream
+- Export a readable text report
+- Dark and light themes, keyboard shortcuts and built-in help
+- Native file dialogs and responsive resizable layout
+- C11 comparison engine separated from the graphical interface
 
-## Screenshots / Gallery
+## Install
 
-> Images/screenshots
-> ![Main-view-after-launched.png](Main-view-after-launched.png)
-> - This is what you see after launched
-> - ![img.png](light-mode.png)
-> - Light Mode
-> - ![dark-mode.png](dark-mode.png)
-> - dark-mode
-> - ![Error_handling.png](Error_handling.png)
-> - if no files is selected/chosen
-> - ![browse-files.png](browse-files.png)
-> - browse files
-> - ![files-content.png](files-content.png)
-> - hit compare button / check content
-> - ![full-screen-mode-to-see-the-result.png](full-screen-mode-to-see-the-result.png)
-> - Full screen mode for a better experience: check the result
-> - ![check_result.png](check_result.png)
-> - see result apart
-> - ![save_report_if_needed.png](save_report_if_needed.png)
-> - you can save report if you need it
-> - ![ignore_whitespace_or_Case.png](ignore_whitespace_or_Case.png)
-> - ignore whitespace or case
-> - ![copy_text_anywhere_and_hit_here_to_paste.png](copy_text_anywhere_and_hit_here_to_paste.png)
-> - you can use this button to paste text copied elsewhere ;-)or simple Ctrl + v
-> - ![bottom_options_btn.png](bottom_options_btn.png)
-> - bottom options
-> 
+Download the archive for your system from the [latest release](https://github.com/sofoste93/Text-Content-Comparison-App/releases/latest).
 
-## Contributing
+| System | Archive | Start |
+| --- | --- | --- |
+| Windows x64 | `Text-Orbit-Compare-Windows-x64.zip` | `TextOrbitCompare/TextOrbitCompare.exe` |
+| Linux x64 | `Text-Orbit-Compare-Linux-x64.tar.gz` | `TextOrbitCompare/run.sh` |
 
-This project is open source and we welcome contributions from the community. If you have ideas on how to improve the tool or want to fix a bug, feel free to fork the repository and submit a pull request. Let's make this tool even more useful together!
+No Python installation is required. Windows may show a SmartScreen notice because community releases are currently unsigned.
 
-Thank you for using the Sofostech File Comparison Tool!
+On Linux, the application uses the system X11/OpenGL stack. Native open/save dialogs use an available desktop helper such as Zenity or KDialog; the application itself still works if neither is installed, and files can be dragged into the window.
 
-> Stephane Sob F. @sofoste93
+## Quick tour
+
+1. Open a file on each side, paste text, or drop files into the window.
+2. Enable **Ignore case** or **Ignore whitespace** when relevant.
+3. Select **Compare** or press `Ctrl+Enter`.
+4. Filter the stream, search it, then export a report with `Ctrl+S`.
+
+Press `F1` at any time for the built-in flight manual.
+
+## Build with CLion or CMake
+
+Requirements: CMake 3.24+, a C11 compiler, Ninja and Git. CMake fetches the pinned raylib 6.0 source during the first configuration.
+
+```bash
+cmake --preset debug
+cmake --build --preset debug
+ctest --preset debug
+```
+
+Open the repository root in CLion to use the included presets. Linux development also requires the X11, OpenGL and ALSA development packages listed in the CI workflow.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    GUI[raylib + raygui GUI] --> Engine[C11 diff engine]
+    Dialogs[Native file dialogs] --> GUI
+    Engine --> Normalize[Case and whitespace normalization]
+    Engine --> LCS[Line alignment]
+    Engine --> Report[Portable text report]
+```
+
+The UI owns file selection and presentation. `diff_engine.c` receives two strings and returns owned comparison rows. This boundary keeps the algorithm testable without opening a graphical window.
+
+Read [docs/TUTORIAL.md](docs/TUTORIAL.md) for a guided tour of the C code, memory ownership and line-alignment algorithm.
+
+## Project map
+
+```text
+src/                    C application and comparison engine
+tests/                  Headless engine tests
+assets/                 Logo and Windows icon
+packaging/              Platform release metadata
+third_party/            Pinned single-file GUI/dialog sources
+legacy/python/          Preserved original Python application
+docs/legacy/            Original screenshots and notes
+```
+
+## Validation
+
+CI builds and tests the project on Windows and Linux. The Linux job also launches the real GUI under a virtual display and captures a frame, catching startup and rendering regressions.
+
+```bash
+cmake --build --preset release
+ctest --preset release
+```
+
+## Limits
+
+Each editor accepts up to 256 KiB. The full line-alignment algorithm is used for ordinary documents; very large line matrices switch to a bounded line-by-line comparison to avoid excessive memory use. Case-insensitive comparison currently covers ASCII characters, while UTF-8 content is preserved in files and reports.
+
+## Legacy and license
+
+The original Python/Tkinter implementation remains in `legacy/python` for learning and historical comparison. The project is released under the [MIT License](LICENSE); dependency notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

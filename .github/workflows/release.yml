@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags: ['v2.*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+      - name: Build and test
+        run: |
+          cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+          cmake --build build/release --parallel
+          ctest --test-dir build/release --output-on-failure
+      - name: Assemble portable directory
+        run: |
+          mkdir -p dist/TextOrbitCompare
+          cp build/release/TextOrbitCompare.exe README.md CHANGELOG.md LICENSE THIRD_PARTY_NOTICES.md dist/TextOrbitCompare/
+          ldd build/release/TextOrbitCompare.exe | tee dist/TextOrbitCompare/runtime-libraries.txt
+      - name: Create Windows archive
+        shell: pwsh
+        run: Compress-Archive -Path dist/TextOrbitCompare -DestinationPath Text-Orbit-Compare-Windows-x64.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows-package
+          path: Text-Orbit-Compare-Windows-x64.zip
+
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev xvfb
+      - name: Build, test and launch
+        run: |
+          cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+          cmake --build build/release --parallel
+          ctest --test-dir build/release --output-on-failure
+          xvfb-run -a ./build/release/TextOrbitCompare --screenshot text-orbit-smoke.png
+          ldd build/release/TextOrbitCompare | tee runtime-libraries.txt
+          ! grep -q 'not found' runtime-libraries.txt
+      - name: Assemble Linux archive
+        run: |
+          mkdir -p dist/TextOrbitCompare
+          cp build/release/TextOrbitCompare README.md CHANGELOG.md LICENSE THIRD_PARTY_NOTICES.md runtime-libraries.txt dist/TextOrbitCompare/
+          cat > dist/TextOrbitCompare/run.sh <<'EOF'
+          #!/usr/bin/env sh
+          cd "$(dirname "$0")"
+          exec ./TextOrbitCompare "$@"
+          EOF
+          chmod +x dist/TextOrbitCompare/run.sh dist/TextOrbitCompare/TextOrbitCompare
+          tar -czf Text-Orbit-Compare-Linux-x64.tar.gz -C dist TextOrbitCompare
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-package
+          path: Text-Orbit-Compare-Linux-x64.tar.gz
+
+  publish:
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          path: release
+          merge-multiple: true
+      - name: Create source archive and checksums
+        run: |
+          git archive --format=tar.gz --output=release/text-orbit-compare-v2.0.0-source.tar.gz HEAD
+          cd release
+          sha256sum Text-Orbit-Compare-* text-orbit-compare-v2.0.0-source.tar.gz > SHA256SUMS.txt
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > release-notes.md <<'EOF'
+          A native C restoration of the original Python/Tkinter comparison tool.
+
+          - Side-by-side editable documents and color-coded comparison stream
+          - Case and whitespace normalization, filtering, search and text reports
+          - Dark and light themes, native file dialogs, drag-and-drop and shortcuts
+          - Portable packages for Windows x64 and Linux x64
+
+          Extract the archive for your system and start `TextOrbitCompare` (`run.sh` on Linux). No Python installation is required.
+          EOF
+          gh release create "$GITHUB_REF_NAME" release/* --title "Text Orbit Compare 2.0.0" --notes-file release-notes.md

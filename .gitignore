@@ -1,0 +1,26 @@
+# CMake output
+/build/
+/cmake-build-*/
+/out/
+CMakeUserPresets.json
+
+# Generated packages and reports
+/dist/
+*.zip
+*.tar.gz
+*.AppImage
+
+# IDE and local state
+.idea/
+.vscode/
+*.iml
+
+# Python caches used only by helper tools
+__pycache__/
+*.py[cod]
+.venv/
+
+# System files and logs
+.DS_Store
+Thumbs.db
+*.log
